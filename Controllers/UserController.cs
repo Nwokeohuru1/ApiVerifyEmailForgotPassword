@@ -14,14 +14,12 @@ namespace ApiVerifyEmailForgotPassword.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserServices _userServices;
-        private readonly DataContext _dataContext;
         private readonly PasswordHash _passwordHash;
         private readonly RandomToken _randomToken;
 
-        public UserController(IUserServices userServices, DataContext dataContext, PasswordHash passwordHash, RandomToken randomToken)
+        public UserController(IUserServices userServices, PasswordHash passwordHash, RandomToken randomToken)
         {
             _userServices = userServices;
-            _dataContext = dataContext;
             _passwordHash = passwordHash;
             _randomToken = randomToken;
         }
@@ -67,48 +65,38 @@ namespace ApiVerifyEmailForgotPassword.Controllers
         [Route("VerifyUser")]
         public async Task<IActionResult> Verify(string token)
         {
-            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            var user = await _userServices.GetUserByToken(token);
             if (user == null)
             {
-                return BadRequest("invalid token");
+                return BadRequest("Invalid Token");
             }
-            user.VerifiedAt = DateTime.Now;
-            await _dataContext.SaveChangesAsync();
-            return Ok($"{user.Email} is verified, You can now Login");
+            await _userServices.Verify(token);
+            return Ok("verified!, You can now Login");
         }
 
         [HttpPost("Forgot-Password")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
-            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _userServices.GetUser(email);
             if (user == null)
             {
                 return BadRequest($"{email} not found");
             }
-            user.PasswordResetToken = _randomToken.CreateRandomToken();
-            user.ResetTokenExpires = DateTime.Now.AddDays(1);
-            await _dataContext.SaveChangesAsync();
+            await _userServices.ForgotPassword(email);
             return Ok("You may now reset your password");
 
         }
 
-        [HttpPost("Reset-Password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
-        {
-            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token /*&& u.Email==request.Email*/);
-            if (user == null || user.ResetTokenExpires < DateTime.Now)
-            {
-                return BadRequest("Oops!! Invalid token");
-            }
-            _passwordHash.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-            user.PasswordResetToken = null;
-            user.ResetTokenExpires = null;
-            await _dataContext.SaveChangesAsync();
-            return Ok("Password reset is done");
+        //[HttpPost("Reset-Password")]
+        //public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        //{
+        //    if (user == null || user.ResetTokenExpires < DateTime.Now)
+        //    {
+        //        return BadRequest("Oops!! Invalid token");
+        //    }
+        //    return Ok("Password reset is done");
 
-        }
+        //}
 
     }
 }

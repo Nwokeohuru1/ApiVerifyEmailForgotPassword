@@ -53,11 +53,43 @@ namespace ApiVerifyEmailForgotPassword.Services
           return true;
         }
 
-        
-      
+        public async Task<bool> Verify(string token)
+        {
+
+            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            user.VerifiedAt = DateTime.UtcNow; 
+            await _dataContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<User> GetUserByToken(string token)
+        {
+            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            return user;
+        }
+
+        public async Task<bool> ForgotPassword(string email)
+        {
+            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.Email == email);
+            user.PasswordResetToken = _randomToken.CreateRandomToken();
+            user.ResetTokenExpires = DateTime.Now.AddDays(1);
+            await _dataContext.SaveChangesAsync();
+            return true;
+        }
 
 
-      
+        //public async Task<bool> ResetPassword(ResetPasswordRequest request)
+        //{
+        //    var user = await _dataContext.users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token /*&& u.Email==request.Email*/);
+        //    _passwordHash.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        //    user.PasswordHash = passwordHash;
+        //    user.PasswordSalt = passwordSalt;
+        //    user.PasswordResetToken = null;
+        //    user.ResetTokenExpires = null;
+        //    await _dataContext.SaveChangesAsync();
+        //    return true;
+        //}
+
     }
 
 
