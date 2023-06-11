@@ -29,13 +29,12 @@ namespace ApiVerifyEmailForgotPassword.Controllers
         [Route("RegisterUser")]
         public async Task<IActionResult> Register(UserRegisterRequest request)
         {
-            
-        
-            if (_dataContext.users.Any(o => o.Email == request.Email))
+            var users = await _userServices.GetUsers();
+            if (users.Any(u => u.Email == request.Email))
             {
-                return BadRequest("User already exists");
+                return BadRequest("Email Exists");
             }
-            var user = await _userServices.Register(request);
+            var RegUser = await _userServices.Register(request);
             return Ok("User successfully created");
            
         }
@@ -44,7 +43,7 @@ namespace ApiVerifyEmailForgotPassword.Controllers
         [Route("UserLogin")]
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
-            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _userServices.GetUser(request.Email);
             if (user == null)
             {
                 return BadRequest("User Not Found");

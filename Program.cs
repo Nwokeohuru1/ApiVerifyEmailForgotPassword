@@ -20,6 +20,8 @@ namespace ApiVerifyEmailForgotPassword
             builder.Services.AddScoped<PasswordHash>();
             builder.Services.AddScoped<RandomToken>();
 
+            
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

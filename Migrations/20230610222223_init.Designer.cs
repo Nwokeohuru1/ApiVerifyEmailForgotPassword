@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiVerifyEmailForgotPassword.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230527171824_init")]
+    [Migration("20230610222223_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
