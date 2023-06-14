@@ -24,12 +24,14 @@ namespace ApiVerifyEmailForgotPassword.Services
         public Task<List<User>> GetUsers()
         {
             var user = _dataContext.users.ToListAsync();
+
             return user;
         }
 
         public async Task<User> GetUser(string email)
         {
             var user_ = await _dataContext.users.FirstOrDefaultAsync(u => u.Email == email);
+
             return user_;
            
         }
@@ -50,6 +52,7 @@ namespace ApiVerifyEmailForgotPassword.Services
             
             _dataContext.Add(user);
           await _dataContext.SaveChangesAsync();
+
           return true;
         }
 
@@ -59,12 +62,20 @@ namespace ApiVerifyEmailForgotPassword.Services
             var user = await _dataContext.users.FirstOrDefaultAsync(u => u.VerificationToken == token);
             user.VerifiedAt = DateTime.UtcNow; 
             await _dataContext.SaveChangesAsync();
+
             return true;
         }
 
-        public async Task<User> GetUserByToken(string token)
+        public async Task<User> GetUserByVerificationToken(string token)
         {
             var user = await _dataContext.users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+
+            return user;
+        }
+        public async Task<User> GetUserByPasswordResetToken(string token)
+        {
+            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
+
             return user;
         }
 
@@ -74,21 +85,23 @@ namespace ApiVerifyEmailForgotPassword.Services
             user.PasswordResetToken = _randomToken.CreateRandomToken();
             user.ResetTokenExpires = DateTime.Now.AddDays(1);
             await _dataContext.SaveChangesAsync();
+
             return true;
         }
 
 
-        //public async Task<bool> ResetPassword(ResetPasswordRequest request)
-        //{
-        //    var user = await _dataContext.users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token /*&& u.Email==request.Email*/);
-        //    _passwordHash.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-        //    user.PasswordHash = passwordHash;
-        //    user.PasswordSalt = passwordSalt;
-        //    user.PasswordResetToken = null;
-        //    user.ResetTokenExpires = null;
-        //    await _dataContext.SaveChangesAsync();
-        //    return true;
-        //}
+        public async Task<bool> ResetPassword(ResetPasswordRequest request)
+        {
+            var user = await _dataContext.users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token /*&& u.Email==request.Email*/);
+            _passwordHash.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+            user.PasswordResetToken = null;
+            user.ResetTokenExpires = null;
+            await _dataContext.SaveChangesAsync();
+
+            return true;
+        }
 
     }
 

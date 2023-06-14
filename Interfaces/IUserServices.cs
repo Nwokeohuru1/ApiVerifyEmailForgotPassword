@@ -9,9 +9,10 @@ namespace ApiVerifyEmailForgotPassword.Interfaces
     Task<List<User>> GetUsers();
     Task<User> GetUser(string email);
     Task<bool> Verify(string token);
-    Task<User> GetUserByToken(string token);
+    Task<User> GetUserByVerificationToken(string token);
+    Task<User> GetUserByPasswordResetToken(string token);
     Task<bool> ForgotPassword(string email);
-    //Task<bool> ResetPassword(ResetPasswordRequest request);
+    Task<bool> ResetPassword(ResetPasswordRequest request);
 
 
 

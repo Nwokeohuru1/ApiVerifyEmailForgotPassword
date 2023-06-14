@@ -65,7 +65,7 @@ namespace ApiVerifyEmailForgotPassword.Controllers
         [Route("VerifyUser")]
         public async Task<IActionResult> Verify(string token)
         {
-            var user = await _userServices.GetUserByToken(token);
+            var user = await _userServices.GetUserByVerificationToken(token);
             if (user == null)
             {
                 return BadRequest("Invalid Token");
@@ -83,20 +83,24 @@ namespace ApiVerifyEmailForgotPassword.Controllers
                 return BadRequest($"{email} not found");
             }
             await _userServices.ForgotPassword(email);
+
             return Ok("You may now reset your password");
 
         }
 
-        //[HttpPost("Reset-Password")]
-        //public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
-        //{
-        //    if (user == null || user.ResetTokenExpires < DateTime.Now)
-        //    {
-        //        return BadRequest("Oops!! Invalid token");
-        //    }
-        //    return Ok("Password reset is done");
+        [HttpPost("Reset-Password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            var user = await _userServices.GetUserByPasswordResetToken(request.Token);
+            if (user == null || user.ResetTokenExpires < DateTime.Now)
+            {
+                return BadRequest("Oops!! Invalid token");
+            }
+            await _userServices.ResetPassword(request);
 
-        //}
+            return Ok("Password reset is done");
+
+        }
 
     }
 }
